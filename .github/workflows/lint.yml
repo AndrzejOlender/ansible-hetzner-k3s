@@ -14,24 +14,33 @@ jobs:
         uses: dawidd6/action-ansible-playbook@v2
         with:
           # Required, playbook filepath
-          playbook: deploy.yml
+          playbook: site.yml
           # Optional, directory where playbooks live
           directory: ./
           # Optional, SSH private key
           key: ${{secrets.SSH_PRIVATE_KEY}}
           # Optional, literal inventory file contents
           inventory: |
-            [all]
-            example.com
+            node1 ansible_port=22 ansible_host=168.119.226.35 ansible_user=root
+            node2 ansible_port=22 ansible_host=168.119.226.54 ansible_user=root
+            node3 ansible_port=22 ansible_host=168.119.226.181 ansible_user=root
+            
+            [master]
+            node1
 
-            [group1]
-            example.com
+            [node]
+            node2
+            node3
+
+            [k3s_cluster:children]
+            master
+            node
           # Optional, SSH known hosts file content
           known_hosts: .known_hosts
           # Optional, encrypted vault password
-          vault_password: ${{secrets.VAULT_PASSWORD}}
+          #vault_password: ${{secrets.VAULT_PASSWORD}}
           # Optional, galaxy requirements filepath
-          requirements: galaxy-requirements.yml
+          # requirements: galaxy-requirements.yml
           # Optional, additional flags to pass to ansible-playbook
           options: |
             --inventory .hosts

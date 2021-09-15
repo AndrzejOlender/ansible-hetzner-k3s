@@ -1,5 +1,5 @@
 ---
-name: Lint
+name: Ansible Playbook
 'on':
   pull_request:
   push:
@@ -13,19 +13,48 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out the codebase.
+      - name: Check out the codebase
         uses: actions/checkout@v2
 
-      - name: Set up Python 3.7.
+      - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:
           python-version: '3.x'
 
-      - name: Install test dependencies.
+      - name: Install test dependencies
         run: pip3 install yamllint ansible-lint ansible
 
-      - name: Run yamllint.
+      - name: Run yamllint
         run: yamllint .
 
-      - name: Run ansible-lint.
+      - name: Run ansible-lint
         run: ansible-lint
+        
+      - name: Run playbook
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          # Required, playbook filepath
+          playbook: deploy.yml
+          # Optional, directory where playbooks live
+          directory: ./
+          # Optional, SSH private key
+          key: ${{secrets.SSH_PRIVATE_KEY}}
+          # Optional, literal inventory file contents
+          inventory: |
+            [all]
+            example.com
+
+            [group1]
+            example.com
+          # Optional, SSH known hosts file content
+          known_hosts: .known_hosts
+          # Optional, encrypted vault password
+          vault_password: ${{secrets.VAULT_PASSWORD}}
+          # Optional, galaxy requirements filepath
+          requirements: galaxy-requirements.yml
+          # Optional, additional flags to pass to ansible-playbook
+          options: |
+            --inventory .hosts
+            --limit group1
+            --extra-vars hello=there
+            --verbose
